@@ -1,0 +1,523 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+	<meta charset="utf-8">
+	<title>Projet Tennis</title>
+	<style>
+		body { background: #eee; font-family: sans-serif; font-size: 18px; margin: 0; padding: 0 }
+		h1 { font-size: 30px }
+		table.parameters td { padding: 2px }
+		table.parameters td:first-child { font-weight: bold; padding-right: 10px }
+		table.parameters td input { background: white; border: 1px solid #aaa; font-family: sans-serif; font-size: 18px; padding: 1px; width: 100px }
+		div.button { background: #06c; border-radius: 4px; color: white; cursor: pointer; display: inline-block; padding: 10px 20px }
+		div.panel { background: white; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); margin: 20px auto; max-width: 800px; padding: 20px }
+		pre#result { font-size: 15px }
+	</style>
+</head>
+
+<body>
+	<div class="panel">
+                <h1>Projet Tennis - Eliott</h1>
+                <div><img alt="terrain" src="Terrain1.SVG" align="right"></div>
+                <div><img alt="terrain" src="sphere.SVG" align="left" ></div>
+                <h2>Conditions initiales</h2>
+		<table class="parameters">
+			<tr>
+				<td>Coordonée x :</td>
+				<td><input id="position_x" type="text" value="0.5"> [m]</td>
+			</tr>
+			<tr>
+				<td>Coordonée y :</td>
+				<td><input id="position_y" type="text" value="-11.89"> [m]</td>
+			</tr>
+			<tr>
+                                <td>Coordonée z :</td>
+                                <td><input id="position_z" type="text" value="2.5"> [m] </td>
+                        </tr>
+			<tr>
+                                <td>Vitesse initiale :</td>
+                                <td><input id="v" type="text" value="120"> [km/h] </td>
+                        </tr>
+                        <tr>
+                                <td>Theta :</td>
+                                <td><input id="teta" type="text" value="90"> [°] </td>
+                        </tr>
+                        <tr>
+                                <td>Phi :</td>
+                                <td><input id="phi" type="text" value="100"> [°] </td>
+                        </tr>
+                        <tr>
+                                <td>Vitesse angulaire autour de l'axe x :</td>
+                                <td><input id="wx" type="text" value="-1500"> [tr/min] </td>
+                        </tr>
+			<tr>
+                                <td>Vitesse angulaire autour de l'axe y :</td>
+                                <td><input id="wy" type="text" value="-400"> [tr/min]</td>
+                        </tr>
+			<tr>
+                                <td>Vitesse angulaire autour de l'axe z :</td>
+                                <td><input id="wz" type="text" value="400"> [tr/min]</td>
+                        </tr>
+                     	
+                </table>
+                <h5>Pour exprimer correctement les coordonées initiales ainsi que la vitesse (dans son repère sphèrique), on se référa aux illustrations ci-dessus.</h5>
+                <h5>On utilise la règle de la mains droite pour déterminer le signe des vitesses angulaires. Au tennis, les plus grands joueurs arrivent à atteindre des vitesses angulaires alant jusqu'à 4000 tours/minute.</h5>
+		<h2>Aléas</h2>
+		<table class="parameters">
+                        <tr>
+                                <td>Ecart type vitesse :</td>
+                                <td><input id="ecart_type_vitesse" type="text" value="5"> [km/h]</td>
+                        </tr>
+                        <tr>
+                                <td>Ecart type angles :</td>
+                                <td><input id="ecart_type_angle" type="text" value="1.5"> [°]</td>
+                        </tr>
+                        <tr>
+                                <td>Ecart type vitesse angulaire :</td>
+                                <td><input id="ecart_type_w" type="text" value="75"> [tr/min] </td>
+                        </tr>
+                        <tr>
+                                <td>Vitesse vent :</td>
+                                <td><input id="vent" type="text" value="6"> [km/h]  </td>
+                        </tr>
+                        <tr>
+                                <td>Direction vent :</td>
+                                <td><input id="phi_vent" type="text" value="45"> [°] </td>
+                        </tr>
+                </table>
+                <h5>On considère le vent comme étant horizontal et son angle de direction est mesuré par rapport à l'axe x.</h5>
+                <h2>Settings</h2>
+                <table class="parameters">
+                        <tr>
+                                <td>Type de coup :
+                                        <select id="type_coup">
+                                                <option value="service_gauche">Service à gauche</option>
+                                                <option value="service_droite">Service à droite</option>
+                                                <option value="coup_normal">Coup normal</option>
+                                        </select>        
+
+                                </td>
+                        </tr>
+                        <tr>
+                                <td>Frottement de l'air : 
+                                        <select id="frottement_air">
+                                                <option value="ON">Activé</option>
+                                                <option value="OFF">Desactivé</option>
+                                        </select>
+                                </td>
+                        </tr>
+                        <tr>
+                                <td>Calcul de probabilités : 
+                                        <select id="probas">
+                                                <option value="ON">Activé</option>
+                                                <option value="OFF">Desactivé</option>
+                                        </select>       
+                                </td>
+                        </tr>
+                        <tr>
+                                <td>Nombre d'itérations de la simulation pour calcul de probabilités : </td>
+                                <td><input id="n" type="text" value="50000"> </td>
+                        </tr>
+                        <tr>
+                                <td>Rayon du cercle de similitude : </td>
+                                <td><input id="r" type="text" value="0.75"> [m] </td>
+                                
+                        </tr>
+                </table>
+                <h5>⚠️ Pour que le vent soit pris en compte dans les probas, il faut que les frottements de l'air soient activés. ⚠️</h5>
+		<div style="margin-top: 20px">
+			<div class="button" id="runButton">Lancer la simulation</div>
+                </div>
+                
+        </div>
+	
+
+        <div class="panel" id="resultPanel" style="display: none">
+                <pre id="result"></pre>
+                <div><img alt="Vue dessus" id="dessus" src="image/vue_dessus.SVG"></div>
+                <div><img alt="Vue aléas" id="impacts" src="image/vue_impacts_imprécisions.SVG"></div>
+                <div><img alt="Vue 3D" id="plot3d" src="image/vue_plot_3D.SVG",sytle="width:100%"></div>
+                <div style="color: #666; font-size: 13px">
+        </div>
+        </div>
+        <div class="panel" id="scénarios">
+                <h3>Scénarios - les boutons ci-dessous modifient les paramètres afin d'explorer les capacités de la simulation :</h3>
+                <h4>Scénario 1 : l'impact des frottements de l'air </h4>
+                <button onclick="scénario1_0()">coup droit avec frottements de l'air</button>
+                <button onclick="scénario1_1()">même coup droit sans frottement</button>
+                <h4>Scénario 2 : le rôle des effets sur la trajectoire de la balle </h4>
+                <button onclick="scénario2_0()">revers croisé lifté</button>
+                <button onclick="scénario2_1()">revers croisé à plat</button>
+                <button onclick="scénario2_2()">revers croisé slicé</button>
+                <h4>Scénario 3 : l'impact du vent sur nos coups lors d'une faible bise est-il un avantage ou désavantage? </h4>
+                <button onclick="scénario3_0()">vent vers le Nord</button>
+                <button onclick="scénario3_1()">vent vers l'Est</button>
+                <button onclick="scénario3_2()">vent vers le Sud</button>
+                <button onclick="scénario3_3()">vent vers l'Ouest</button>
+                <h4>Scénario 4 : A quel point faut-il être précis pour maîtriser un coup compliqué? </h4>
+                <button onclick="scénario4_0()">~25% dans le cercle de similitude</button>
+                <button onclick="scénario4_1()">~50% dans le cercle de similitude</button>
+                <button onclick="scénario4_2()">~75% dans le cercle de similitude</button>
+                <h4>Scénario 5 : Reproduction du service le plus rapide au monde (*) </h4>
+                <button onclick="scénario5_0()">Sam Groth - 263 km/h</button>
+                <h6>(*) https://tenniscompanion.org/fastest-tennis-serves/ </h6>
+
+
+        </div>
+        
+
+	<script>
+	// Elements de la page
+        var x = document.getElementById('position_x');
+        var y = document.getElementById('position_y');
+        var z = document.getElementById('position_z');
+        var v = document.getElementById('v');
+        var teta = document.getElementById('teta');
+        var phi = document.getElementById('phi');
+        var wx = document.getElementById('wx');
+        var wy = document.getElementById('wy');
+        var wz = document.getElementById('wz');
+        var ec_v = document.getElementById('ecart_type_vitesse');
+        var ec_a = document.getElementById('ecart_type_angle');
+        var ec_w = document.getElementById('ecart_type_w');
+        var vent = document.getElementById('vent');
+        var phi_vent = document.getElementById('phi_vent');
+        var type = document.getElementById('type_coup');
+        var frott = document.getElementById('frottement_air');
+        var proba = document.getElementById('probas');
+        var n = document.getElementById('n');
+        var r = document.getElementById('r');
+        var runButton = document.getElementById('runButton');
+        var resultPanel = document.getElementById('resultPanel');
+        var resultLevel = document.getElementById('resultLevel');
+        var resultArea = document.getElementById('result');
+        var dessus = document.getElementById("dessus");
+        var plot3d =document.getElementById("plot3d");
+        var impacts = document.getElementById("impacts");
+        var scenar1=document.getElementById('Scenario1');
+        
+
+
+	runButton.onclick = function(event) {
+		// Lire les valeurs des input boxes
+	        var x2 = parseFloat(x.value);
+                var y2 = parseFloat(y.value);
+	        var z2 = parseFloat(z.value);
+       	        var v2 = parseFloat(v.value);
+                var teta2 = parseFloat(teta.value);
+                var phi2 = parseFloat(phi.value);
+                var wx2 = parseFloat(wx.value);
+       	        var wy2 = parseFloat(wy.value);
+                var wz2 = parseFloat(wz.value);
+                var ec_v2 = parseFloat(ec_v.value);
+                var ec_a2 = parseFloat(ec_a.value);
+                var ec_w2 = parseFloat(ec_w.value);
+                var vent2 = parseFloat(vent.value);
+                var phivent2 = parseFloat(phi_vent.value);
+                var type2 = type.value;
+                var frott2 = frott.value;
+	        var proba2 = proba.value;
+	        var n2 = parseInt(n.value);
+	        var r2 = parseFloat(r.value);
+
+		// Lancer la simulation sur le serveur
+		var request = new XMLHttpRequest();
+		request.addEventListener('load', onLoad);
+		request.responseType = 'text';
+		request.open('GET', '/projets/projet_tennis/run?x=' + x2 + '&y=' + y2 + '&z=' + z2 + '&v=' + v2 + '&teta=' + teta2 + '&phi=' + phi2 + '&wx=' + wx2 + '&wy=' +wy2 + '&wz=' + wz2 + '&ec_v=' + ec_v2 + '&ec_a=' + ec_a2 +'&ec_w='+ec_w2 + '&vent=' +vent2+ '&phi_vent=' + phivent2 + '&type=' + type2 + '&frott=' + frott2 + '&proba=' + proba2 + '&n=' + n2 +'&r=' + r2); 
+                request.send();
+
+		function onLoad() {
+			// La simulation nous a renvoyé une erreur
+			if (request.status != 200) {
+				resultArea.textContent = 'Erreur ' + request.status + '\n\n' + request.response;
+				return
+			}
+			// Afficher le résultat brut
+			resultPanel.style.display = '';
+			resultArea.textContent = request.response;
+                        //modifie nom des images afin qu'elles soient bien refresh sur le site
+                        var x = request.response.indexOf("Image index :");
+                        var num = request.response.substr(x+13,4);
+                        dessus.src="image/vue_dessus"+num+".SVG";
+                        impacts.src="image/vue_impacts_imprécisions"+num+".SVG";
+                        plot3d.src="image/vue_plot_3D"+num+".SVG";
+
+		}
+	};
+
+        function scénario1_0(){
+                //Les boutons modifient les paramètres afin d'éviter d'avoir à les rentrer nous mêmes
+                x.value=2.5;
+                y.value=-12;
+                z.value=1.3;
+                v.value=90;
+                teta.value=77;
+                phi.value=105;
+                wx.value=-900;
+                wy.value=-800;
+                wz.value=100;
+                type.value="coup_normal";
+                frott.value="ON";
+                proba.value="OFF";
+                runButton.click();      //lance la simulation une fois les paramètres modifiés
+        };
+
+        function scénario1_1(){
+                //Les boutons modifient les paramètres afin d'éviter d'avoir à les rentrer nous mêmes
+                x.value=2.5;
+                y.value=-12;
+                z.value=1.3;
+                v.value=90;
+                teta.value=77;
+                phi.value=105;
+                wx.value=-900;
+                wy.value=-800;
+                wz.value=100;
+                type.value="coup_normal";
+                frott.value="OFF";
+                proba.value="OFF";
+                runButton.click();
+        };
+
+        function scénario2_0(){
+                //Les boutons modifient les paramètres afin d'éviter d'avoir à les rentrer nous mêmes
+                x.value=-3;
+                y.value=-10;
+                z.value=1.2;
+                v.value=85;
+                teta.value=79;
+                phi.value=74;
+                wx.value=-900;
+                wy.value=500;
+                wz.value=-100;
+                frott.value="ON";
+                type.value="coup_normal";
+                proba.value="OFF";
+                runButton.click();
+        };
+
+        function scénario2_1(){
+                //Les boutons modifient les paramètres afin d'éviter d'avoir à les rentrer nous mêmes
+                x.value=-3;
+                y.value=-10;
+                z.value=1.2;
+                v.value=85;
+                teta.value=79;
+                phi.value=74;
+                wx.value=0;
+                wy.value=0;
+                wz.value=0;
+                type.value="coup_normal";
+                frott.value="ON";
+                proba.value="OFF";
+                runButton.click();
+        };
+
+        function scénario2_2(){
+                //Les boutons modifient les paramètres afin d'éviter d'avoir à les rentrer nous mêmes
+                x.value=-3;
+                y.value=-10;
+                z.value=1.2;
+                v.value=85;
+                teta.value=79;
+                phi.value=74;
+                wx.value=600;
+                wy.value=-200;
+                wz.value=-100;
+                type.value="coup_normal";
+                frott.value="ON";
+                proba.value="OFF";
+                runButton.click();
+        };
+
+        function scénario3_0(){
+                //Les boutons modifient les paramètres afin d'éviter d'avoir à les rentrer nous mêmes
+                x.value=-2;
+                y.value=-11.89;
+                z.value=2.5;
+                v.value=110;
+                teta.value=90;
+                phi.value=78;
+                wx.value=-400;
+                wy.value=400;
+                wz.value=100;
+                ec_v.value=5;
+                ec_a.value=1.5;
+                ec_w.value=50;
+                vent.value=12;
+                phi_vent.value=90;
+                type.value="service_droite";
+                frott.value="ON";
+                proba.value="ON";
+                r.value=0.75;
+                n.value=50000;
+                runButton.click();
+        };
+
+        function scénario3_1(){
+                //Les boutons modifient les paramètres afin d'éviter d'avoir à les rentrer nous mêmes
+                x.value=-2;
+                y.value=-11.89;
+                z.value=2.5;
+                v.value=110;
+                teta.value=90;
+                phi.value=78;
+                wx.value=-400;
+                wy.value=400;
+                wz.value=100;
+                ec_v.value=5;
+                ec_a.value=1.5;
+                ec_w.value=50;
+                vent.value=12;
+                phi_vent.value=0;
+                type.value="service_droite";
+                frott.value="ON";
+                proba.value="ON";
+                r.value=0.75;
+                n.value=50000;
+                runButton.click();
+        };
+
+        function scénario3_2(){
+                //Les boutons modifient les paramètres afin d'éviter d'avoir à les rentrer nous mêmes
+                x.value=-2;
+                y.value=-11.89;
+                z.value=2.5;
+                v.value=110;
+                teta.value=90;
+                phi.value=78;
+                wx.value=-400;
+                wy.value=400;
+                wz.value=100;
+                ec_v.value=5;
+                ec_a.value=1.5;
+                ec_w.value=50;
+                vent.value=12;
+                phi_vent.value=270;
+                type.value="service_droite";
+                frott.value="ON";
+                proba.value="ON";
+                r.value=0.75;
+                n.value=50000;
+                runButton.click();
+        };
+
+        function scénario3_3(){
+                //Les boutons modifient les paramètres afin d'éviter d'avoir à les rentrer nous mêmes
+                x.value=-2;
+                y.value=-11.89;
+                z.value=2.5;
+                v.value=110;
+                teta.value=90;
+                phi.value=78;
+                wx.value=-400;
+                wy.value=400;
+                wz.value=100;
+                ec_v.value=5;
+                ec_a.value=1.5;
+                ec_w.value=50;
+                vent.value=12;
+                phi_vent.value=180;
+                type.value="service_droite";
+                frott.value="ON";
+                proba.value="ON";
+                r.value=0.75;
+                n.value=50000;
+                runButton.click();
+        };
+
+        function scénario4_0(){
+                //Les boutons modifient les paramètres afin d'éviter d'avoir à les rentrer nous mêmes
+                x.value=1.3;
+                y.value=-11.89;
+                z.value=2.5;
+                v.value=90;
+                teta.value=87;
+                phi.value=102;
+                wx.value=-300;
+                wy.value=300;
+                wz.value=1200;
+                ec_v.value=8;
+                ec_a.value=2;
+                ec_w.value=80;
+                vent.value=0;
+                phi_vent.value=0;
+                type.value="service_gauche";
+                frott.value="ON";
+                proba.value="ON";
+                r.value=1;
+                n.value=50000;
+                runButton.click();
+        };
+
+        function scénario4_1(){
+                //Les boutons modifient les paramètres afin d'éviter d'avoir à les rentrer nous mêmes
+                x.value=1.3;
+                y.value=-11.89;
+                z.value=2.5;
+                v.value=90;
+                teta.value=87;
+                phi.value=102;
+                wx.value=-300;
+                wy.value=300;
+                wz.value=1200;
+                ec_v.value=3;
+                ec_a.value=1.4;
+                ec_w.value=60;
+                vent.value=0;
+                phi_vent.value=0;
+                type.value="service_gauche";
+                frott.value="ON";
+                proba.value="ON";
+                r.value=1;
+                n.value=50000;
+                runButton.click();
+        };
+
+        function scénario4_2(){
+                //Les boutons modifient les paramètres afin d'éviter d'avoir à les rentrer nous mêmes
+                x.value=1.3;
+                y.value=-11.89;
+                z.value=2.5;
+                v.value=90;
+                teta.value=87;
+                phi.value=102;
+                wx.value=-300;
+                wy.value=300;
+                wz.value=1200;
+                ec_v.value=1;
+                ec_a.value=0.9;
+                ec_w.value=40;
+                vent.value=0;
+                phi_vent.value=0;
+                type.value="service_gauche";
+                frott.value="ON";
+                proba.value="ON";
+                r.value=1;
+                n.value=50000;
+                runButton.click();
+        };
+
+        function scénario5_0(){
+                //Les boutons modifient les paramètres afin d'éviter d'avoir à les rentrer nous mêmes
+                x.value=-1.25;
+                y.value=-12;
+                z.value=3.2;
+                v.value=263;
+                teta.value=99;
+                phi.value=80;
+                wx.value=0;
+                wy.value=0;
+                wz.value=0;
+                type.value="service_droite";
+                frott.value="ON";
+                proba.value="OFF";
+                runButton.click();
+        };
+        
+        </script>
+</body>
+</html>
